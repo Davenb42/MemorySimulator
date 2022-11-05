@@ -24,3 +24,7 @@ hs_err_pid*
 /JavaApplication6/nbproject/private/
 /MemorySimulator/nbproject/private/
 /MemorySimulator/nbproject/
+MemorySimulator/nbproject/project.xml
+MemorySimulator/nbproject/build-impl.xml
+MemorySimulator/nbproject/genfiles.properties
+MemorySimulator/nbproject/project.properties
