@@ -1,4 +1,3 @@
-
 package memorysimulator;
 
 import java.util.List;
@@ -8,7 +7,8 @@ import java.io.FileNotFoundException;
 import java.util.LinkedList;
 
 public class MemorySimulator {
-    private static List<PageFrame> ram; 
+    private static List<PageFrame> ramOpt; 
+    private static List<PageFrame> ramAlg; 
     private static List<Page> hardDisk; 
 
     // Método para extraer los punteros de la lista
@@ -33,19 +33,20 @@ public class MemorySimulator {
     
     public static void main(String[] args) {
         // Inicializaciones
-        ram = new LinkedList<>();
+        ramOpt = new LinkedList<>();
+        ramAlg = new LinkedList<>();
         hardDisk = new LinkedList();
         
         // Rellenar la lista de marcos de página
         for(int addressCounter = 0; addressCounter < 100; addressCounter++){
-            PageFrame pageFrame = new PageFrame(addressCounter*4096);
-            ram.add(pageFrame);
+            PageFrame pageFrame = new PageFrame(addressCounter);
+            ramOpt.add(pageFrame);
         }
         
         // Leer archivo de punteros
         String fileName = "C:\\Users\\Reyner\\Downloads\\procesos.txt";
         
         List<String> pointers = extractPointers(fileName);
-        System.out.println(ram.toString());
+        System.out.println(ramOpt.toString());
     }
 }
