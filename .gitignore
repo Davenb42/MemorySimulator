@@ -28,3 +28,6 @@ MemorySimulator/nbproject/project.xml
 MemorySimulator/nbproject/build-impl.xml
 MemorySimulator/nbproject/genfiles.properties
 MemorySimulator/nbproject/project.properties
+/MemorySimulator/dist/
+/MemorySimulator/build/
+MemorySimulator/nbproject/build-impl.xml
