@@ -12,13 +12,12 @@ public class MemorySimulator {
     private static List<Page> hardDisk; 
 
     // Método para extraer los punteros de la lista
-    public static List<String> extractPointers(String fileName){
+    public static List<String> extractPointers(File file){
         List<String> pointers = new LinkedList<>();
         
         try {
-            File file = new File(fileName);
             try (Scanner reader = new Scanner(file)) {
-                reader.nextLine(); // Ignorar primera línea de títulos
+                reader.nextLine(); // Ignorar primera lÃ­nea de tÃ­tulos
                 while (reader.hasNextLine()) {
                     String pointer = reader.nextLine();
                     pointers.add(pointer);
@@ -31,22 +30,26 @@ public class MemorySimulator {
         return pointers;
     }
     
-    public static void main(String[] args) {
+    public static void executeSimulator(File file) {
         // Inicializaciones
         ramOpt = new LinkedList<>();
         ramAlg = new LinkedList<>();
         hardDisk = new LinkedList();
         
-        // Rellenar la lista de marcos de página
+        // Rellenar la lista de marcos de pÃ¡gina
         for(int addressCounter = 0; addressCounter < 100; addressCounter++){
             PageFrame pageFrame = new PageFrame(addressCounter);
             ramOpt.add(pageFrame);
         }
         
         // Leer archivo de punteros
-        String fileName = "C:\\Users\\Reyner\\Downloads\\procesos.txt";
         
-        List<String> pointers = extractPointers(fileName);
+        List<String> pointers = extractPointers(file);
         System.out.println(ramOpt.toString());
+    }
+    
+    public static void main(String args[]){
+        File file = new File("C:\\Users\\Reyner\\Downloads\\procesos.txt");
+        executeSimulator(file);
     }
 }
