@@ -18,7 +18,7 @@ public class Process {
         memTotal.add(new PointerMemorySize(pointerID, byteSize));
     }
     
-    public void addMemAddPointer(int pointerID, List<Integer> addresses){
+    public void addMemAddrPointer(int pointerID, List<Integer> addresses){
         allocatedMem.add(new PointerMemoryAddress(pointerID, addresses));
     }
     

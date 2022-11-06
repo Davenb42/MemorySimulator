@@ -7,20 +7,22 @@ import java.io.FileNotFoundException;
 import java.util.LinkedList;
 
 public class MemorySimulator {
-    private static List<PageFrame> ramOpt; 
-    private static List<PageFrame> ramAlg; 
-    private static List<Page> hardDisk; 
+    private static List<MMUPage> mmu;
+    private static List<Process> processes;
+    private static List<FileRow> pointers;
 
     // Método para extraer los punteros de la lista
-    public static List<String> extractPointers(File file){
-        List<String> pointers = new LinkedList<>();
+    public static List<FileRow> extractPointers(File file){
+        List<FileRow> pointers = new LinkedList<>();
+        String[] parts;
         
         try {
             try (Scanner reader = new Scanner(file)) {
                 reader.nextLine(); // Ignorar primera lÃ­nea de tÃ­tulos
                 while (reader.hasNextLine()) {
                     String pointer = reader.nextLine();
-                    pointers.add(pointer);
+                    parts = pointer.split(",");
+                    pointers.add(new FileRow(Integer.parseInt(parts[0].replace(" ", "")), Integer.parseInt(parts[1].replace(" ", "")), Integer.parseInt(parts[2].replace(" ", ""))));
                 }
             }
         } catch (FileNotFoundException e) {
@@ -32,20 +34,13 @@ public class MemorySimulator {
     
     public static void executeSimulator(File file) {
         // Inicializaciones
-        ramOpt = new LinkedList<>();
-        ramAlg = new LinkedList<>();
-        hardDisk = new LinkedList();
-        
-        // Rellenar la lista de marcos de pÃ¡gina
-        for(int addressCounter = 0; addressCounter < 100; addressCounter++){
-            PageFrame pageFrame = new PageFrame(addressCounter);
-            ramOpt.add(pageFrame);
-        }
+        mmu = new LinkedList();
         
         // Leer archivo de punteros
+        pointers = extractPointers(file);
+        // System.out.println(pointers.toString());
         
-        List<String> pointers = extractPointers(file);
-        System.out.println(ramOpt.toString());
+        
     }
     
     public static void main(String args[]){
