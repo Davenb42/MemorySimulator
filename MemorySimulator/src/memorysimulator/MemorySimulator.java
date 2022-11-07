@@ -6,6 +6,8 @@ import java.util.Scanner;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MemorySimulator {
     private static List<MMUPage> mmu;
@@ -13,7 +15,57 @@ public class MemorySimulator {
     private static List<FileRow> pointers;
     private static Random random;
     private static int nextFreeDADDR = 1; // Next free disk address 
+    
+    public static List<Integer> emptyFrames(){
+        List<Integer> emptyFrames = IntStream.rangeClosed(0, 99).boxed().collect(Collectors.toList());
+        for (MMUPage mmuPage: mmu){
+            if (mmuPage.getM_ADDR() != -1){
+                emptyFrames.remove(mmuPage.getM_ADDR());
+            }
+        }
+        return emptyFrames;
+    }
 
+    public static List<MMUPage> loadedPages(){
+        List<MMUPage> loadedPages = new LinkedList<>();
+        for (MMUPage mmuPage: mmu){
+            if (mmuPage.isLoaded()){
+                loadedPages.add(mmuPage);
+            }
+        }
+        return loadedPages;
+    }
+    
+    public static void loadPages(List<MMUPage> pages){
+        for (MMUPage page: pages){
+            loadPage(page);
+        }
+    }
+    
+    public static boolean loadPage(MMUPage page){
+        List<Integer> emptyFrames = emptyFrames();
+        if (!emptyFrames.isEmpty()){
+            if (page.isLoaded()){
+                page.setM_ADDR(emptyFrames.get(0));
+                page.setD_ADDR(-1);
+                page.setLoaded(true);
+            }
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
+    public static Process getProcess(int PID){
+        for (Process process: processes){
+            if (process.getPID()==PID){
+                return process;
+            }
+        }
+        return null;
+    }
+    
+    
     // Método para extraer los punteros de la lista
     public static List<FileRow> extractPointers(File file){
         List<FileRow> pointers = new LinkedList<>();
