@@ -15,4 +15,9 @@ public class PointerMemorySize extends Pointer{
     public int getByteSize() {
         return byteSize;
     }
+
+    @Override
+    public String toString() {
+        return "PointerMemorySize{" + "pointerId=" + pointerID + ", byteSize=" + byteSize + '}';
+    }
 }

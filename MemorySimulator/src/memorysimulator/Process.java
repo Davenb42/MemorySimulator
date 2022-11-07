@@ -1,17 +1,20 @@
 
 package memorysimulator;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class Process {
+    private final int PID;
     private final List<PointerMemorySize> memTotal;
     private final List<PointerMemoryAddress> allocatedMem;
     private final List<Integer> accessesList;
 
-    public Process(List<PointerMemorySize> memTotal, List<PointerMemoryAddress> allocatedMem, List<Integer> accessesList) {
-        this.memTotal = memTotal;
-        this.allocatedMem = allocatedMem;
-        this.accessesList = accessesList;
+    public Process(int PID) {
+        this.memTotal = new LinkedList<>();
+        this.allocatedMem = new LinkedList<>();
+        this.accessesList = new LinkedList<>();
+        this.PID = PID;
     }
     
     public void addMemSyzePointer(int pointerID, int byteSize){
@@ -36,5 +39,14 @@ public class Process {
 
     public List<Integer> getAccessesList() {
         return accessesList;
+    }
+
+    public int getPID() {
+        return PID;
+    }
+
+    @Override
+    public String toString() {
+        return "Process{" + "PID=" + PID + ", memTotal=" + memTotal + ", allocatedMem=" + allocatedMem + ", accessesList=" + accessesList + '}';
     }
 }

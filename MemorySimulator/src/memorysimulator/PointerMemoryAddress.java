@@ -17,4 +17,9 @@ public class PointerMemoryAddress extends Pointer{
     public List<Integer> getAdresses() {
         return addresses;
     }
+
+    @Override
+    public String toString() {
+        return "PointerMemoryAddress{" + "pointerId=" + pointerID + ", addresses=" + addresses + '}';
+    }
 }
