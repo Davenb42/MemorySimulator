@@ -126,10 +126,15 @@ public class Menu extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnFileMouseClicked
+        //Create and open a Window to choose a file
         JFileChooser fc = new JFileChooser();
         fc.showOpenDialog(this);
+        //Get the selected file
         File file = fc.getSelectedFile();
+        //Show the name of the selected file
         lblFile.setText(file.getName());
+        //Give the file
+        //new Sistem(file);
     }//GEN-LAST:event_btnFileMouseClicked
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
