@@ -5,11 +5,13 @@ import java.io.File;
 import java.util.Scanner;  
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class MemorySimulator {
     private static List<MMUPage> mmu;
     private static List<Process> processes;
     private static List<FileRow> pointers;
+    private static Random random;
 
     // Método para extraer los punteros de la lista
     public static List<FileRow> extractPointers(File file){
@@ -32,19 +34,36 @@ public class MemorySimulator {
         return pointers;
     }
     
-    public static void executeSimulator(File file) {
+    public static void shuffleList(List<FileRow> initialPointers){
+        int ranIndex;
+        List<FileRow> copy = new LinkedList<>(initialPointers);
+        
+        while(!copy.isEmpty()){
+            ranIndex = random.nextInt(initialPointers.size()*2)%initialPointers.size();
+            for(FileRow row : pointers){
+                if(row.getPID() == initialPointers.get(ranIndex).getPID()){
+                    pointers.add(initialPointers.get(ranIndex));
+                    copy.remove(initialPointers.get(ranIndex));
+                }
+            }
+        }
+    }
+    
+    public static void executeSimulator(File file, Random ran) {
         // Inicializaciones
         mmu = new LinkedList();
-        
+        pointers = new LinkedList();
+        random = ran;
         // Leer archivo de punteros
-        pointers = extractPointers(file);
-        // System.out.println(pointers.toString());
-        
-        
+        List<FileRow> initialPointers = extractPointers(file);
+        shuffleList(initialPointers);
+        System.out.println(pointers.toString());
     }
     
     public static void main(String args[]){
         File file = new File("C:\\Users\\Reyner\\Downloads\\procesos.txt");
-        executeSimulator(file);
+        Random ran = new Random();
+        ran.setSeed(12345L); // Establecer semilla para los valores randomizados
+        executeSimulator(file, ran);
     }
 }
