@@ -1,11 +1,10 @@
 package memorysimulator;
 
-public class PointerMemorySize {
-    private final int pointerID;
+public class PointerMemorySize extends Pointer{
     private final int byteSize;
 
     public PointerMemorySize(int pointerID, int byteSize) {
-        this.pointerID = pointerID;
+        super.pointerID = pointerID;
         this.byteSize = byteSize;
     }
 
