@@ -83,5 +83,10 @@ public class MMUPage {
 
     public void setMark(int mark) {
         this.mark = mark;
-    }    
+    }   
+
+    @Override
+    public String toString() {
+        return "MMUPage{" + "pageID=" + pageID + ", PID=" + PID + ", loaded=" + loaded + ", L_ADDR=" + L_ADDR + ", M_ADDR=" + M_ADDR + ", D_ADDR=" + D_ADDR + ", loadedT=" + loadedT + ", mark=" + mark + '}';
+    }
 }

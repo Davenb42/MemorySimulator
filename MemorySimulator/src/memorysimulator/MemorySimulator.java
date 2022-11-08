@@ -13,6 +13,7 @@ public class MemorySimulator {
     private static List<FileRow> pointers;
     private static Random random;
     private static int nextFreeDADDR = 1; // Next free disk address 
+    private static int nextPageID = 1;
 
     // Método para extraer los punteros de la lista
     public static List<FileRow> extractPointers(File file){
@@ -84,6 +85,7 @@ public class MemorySimulator {
         List<FileRow> initialPointers = extractPointers(file);
         
         for (FileRow row : initialPointers){
+            
             Process process;
             int procPos = findProcess(row.getPID());
             
@@ -98,12 +100,15 @@ public class MemorySimulator {
             List<Integer> addresses = new LinkedList<>();
             
             while(row.getMemSize() >= 0){
-                addresses.add(nextFreeDADDR++);
+                MMUPage mmuPage = new MMUPage(nextPageID, process.getPID(), false, nextPageID, -1, nextFreeDADDR, 0, -1);
+                mmu.add(mmuPage);
+                addresses.add(nextFreeDADDR);
                 row.setMemSize(row.getMemSize()-4096);
+                nextPageID++;
+                nextFreeDADDR++;
             }
             
             process.addMemAddrPointer(row.getPointerID(), addresses);
-            
         }
         
         // Barajar archivo de punteros y agregar accesos
@@ -117,7 +122,7 @@ public class MemorySimulator {
             process.addAccess(row.getPointerID());
         }
         
-        System.out.println(processes.toString());
+        System.out.println(mmu.toString());
     }
     
     public static void main(String args[]){
