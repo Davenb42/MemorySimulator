@@ -66,6 +66,29 @@ public class MemorySimulator {
         return null;
     }
     
+    public static PointerMemoryAddress getallocatedMem(Process process, int ptrID){
+        List<PointerMemoryAddress> allocatedMem = process.getAllocatedMem();
+        for (PointerMemoryAddress address: allocatedMem){
+            if (address.getPointerID()==ptrID){
+                return address;
+            }
+        }
+        return null;
+    }
+    
+    public static List<MMUPage> getPages(PointerMemoryAddress address, int PID){
+        List<Integer> addresses = address.getAdresses();
+        List<MMUPage> PagesToLoad = new LinkedList<>();
+        for (Integer addressP : addresses){
+            for (MMUPage page: PagesToLoad){
+                if(page.getD_ADDR()== addressP){
+                    PagesToLoad.add(page);
+                    break;
+                }
+            }
+        }
+        return PagesToLoad;
+    }
     
     // Método para extraer los punteros de la lista
     public static List<FileRow> extractPointers(File file){
