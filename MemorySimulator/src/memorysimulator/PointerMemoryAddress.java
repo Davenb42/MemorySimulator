@@ -3,23 +3,23 @@ package memorysimulator;
 import java.util.List;
 
 public class PointerMemoryAddress extends Pointer{
-    private final List<Integer> addresses;
+    private final int logicalAddress;
 
-    public PointerMemoryAddress(int pointerID, List<Integer> addresses) {
+    public PointerMemoryAddress(int pointerID, int logicalAddress) {
         super.pointerID = pointerID;
-        this.addresses = addresses;
+        this.logicalAddress = logicalAddress;
     }
 
     public int getPointerID() {
         return pointerID;
     }
 
-    public List<Integer> getAdresses() {
-        return addresses;
+    public int getLogicalAdresses() {
+        return logicalAddress;
     }
 
     @Override
     public String toString() {
-        return "PointerMemoryAddress{" + "pointerId=" + pointerID + ", addresses=" + addresses + '}';
+        return "PointerMemoryAddress{" + "pointerId=" + pointerID + ", logicalAddress=" + logicalAddress + '}';
     }
 }

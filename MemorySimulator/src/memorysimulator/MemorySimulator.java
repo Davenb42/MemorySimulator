@@ -15,6 +15,7 @@ public class MemorySimulator {
     private static List<FileRow> pointers;
     private static Random random;
     private static int nextFreeDADDR = 1; // Next free disk address 
+    private static int nextFreeLADDR = 1; // Next free logical address 
     private static int nextPageID = 1;
     
     public static List<Integer> emptyFrames(){
@@ -76,23 +77,20 @@ public class MemorySimulator {
         return null;
     }
     
-    public static List<MMUPage> getPages(PointerMemoryAddress address, int PID){
-        List<Integer> addresses = address.getAdresses();
-        List<MMUPage> PagesToLoad = new LinkedList<>();
-        for (Integer addressP : addresses){
-            for (MMUPage page: PagesToLoad){
-                if(page.getD_ADDR()== addressP){
-                    PagesToLoad.add(page);
-                    break;
+    public static List<MMUPage> getPages(PointerMemoryAddress address){
+        int logicalAddress = address.getLogicalAdresses();
+        List<MMUPage> pagesToLoad = new LinkedList<>();
+            for (MMUPage page: mmu){
+                if(page.getL_ADDR() == logicalAddress){
+                    pagesToLoad.add(page);
                 }
             }
-        }
-        return PagesToLoad;
+        return pagesToLoad;
     }
     
     // Método para extraer los punteros de la lista
     public static List<FileRow> extractPointers(File file){
-        List<FileRow> pointers = new LinkedList<>();
+        List<FileRow> initialPointers = new LinkedList<>();
         String[] parts;
         
         try {
@@ -101,14 +99,14 @@ public class MemorySimulator {
                 while (reader.hasNextLine()) {
                     String pointer = reader.nextLine();
                     parts = pointer.split(",");
-                    pointers.add(new FileRow(Integer.parseInt(parts[0].replace(" ", "")), Integer.parseInt(parts[1].replace(" ", "")), Integer.parseInt(parts[2].replace(" ", ""))));
+                    initialPointers.add(new FileRow(Integer.parseInt(parts[0].replace(" ", "")), Integer.parseInt(parts[1].replace(" ", "")), Integer.parseInt(parts[2].replace(" ", ""))));
                 }
             }
         } catch (FileNotFoundException e) {
             System.out.println("Archivo no encontrado");
         }
         
-        return pointers;
+        return initialPointers;
     }
     
     // Revisar si ya se creo un proceso
@@ -148,6 +146,19 @@ public class MemorySimulator {
         }
     }
     
+    // Revisar si ya se creo un puntero
+    public static int findPointer(int pointerID, List<PointerMemorySize> memSizePointers){
+        int pointerPos = -1;
+        
+        System.out.println(memSizePointers.toString());
+        
+        for (PointerMemorySize pointer : memSizePointers){
+            if(pointer.getPointerID() == pointerID) pointerPos = memSizePointers.indexOf(pointer);
+        }
+        
+        return pointerPos;
+    }
+    
     public static void executeSimulator(File file, Random ran) {
         // Inicializaciones
         mmu = new LinkedList();
@@ -159,7 +170,11 @@ public class MemorySimulator {
         // Leer archivo de punteros y rellenar información de los procesos
         List<FileRow> initialPointers = extractPointers(file);
         
-        for (FileRow row : initialPointers){
+        // Barajar archivo de punteros y agregar accesos
+        shuffleList(initialPointers); 
+        
+        // Ciclo principal para recorrer la lista de punteros
+        for (FileRow row : pointers){
             
             Process process;
             int procPos = findProcess(row.getPID());
@@ -170,31 +185,31 @@ public class MemorySimulator {
             } else {
                 process = processes.get(procPos);
             }
-            process.addMemSyzePointer(row.getPointerID(), row.getMemSize());
             
-            List<Integer> addresses = new LinkedList<>();
+            PointerMemoryAddress pointer;
+            int pointerPos = findPointer(row.getPointerID(), process.getMemTotal());
             
-            while(row.getMemSize() >= 0){
-                MMUPage mmuPage = new MMUPage(nextPageID, process.getPID(), false, nextPageID, -1, nextFreeDADDR, 0, -1);
-                mmu.add(mmuPage);
-                addresses.add(nextFreeDADDR);
-                row.setMemSize(row.getMemSize()-4096);
-                nextPageID++;
-                nextFreeDADDR++;
-            }
+            if (pointerPos == -1){
+                
+                process.addMemSyzePointer(row.getPointerID(), row.getMemSize());
+                
+                process.addMemAddrPointer(row.getPointerID(), nextFreeLADDR);
+                while(row.getMemSize() >= 0){
+                    MMUPage mmuPage = new MMUPage(nextPageID, process.getPID(), false, nextFreeLADDR, -1, -1, 0, -1);
+                    mmu.add(mmuPage);
+                    row.setMemSize(row.getMemSize()-4096);
+                    nextPageID++;
+                }
+                
+                nextFreeLADDR++;
+            } 
             
-            process.addMemAddrPointer(row.getPointerID(), addresses);
-        }
-        
-        // Barajar archivo de punteros y agregar accesos
-        shuffleList(initialPointers); 
-        
-        for (FileRow row : pointers){
-            Process process;
-            int procPos = findProcess(row.getPID());
-            process = processes.get(procPos);
+            pointer = process.getAllocatedMem().get(pointerPos); // Obtener LADDR del puntero actual
             
-            process.addAccess(row.getPointerID());
+            // Obtener páginas de la MMU a asignar
+            List<MMUPage> pagesToLoad = getPages(pointer);
+            
+            loadPages(pagesToLoad);
         }
         
         System.out.println(mmu.toString());
