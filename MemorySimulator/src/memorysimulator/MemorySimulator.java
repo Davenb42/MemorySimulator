@@ -4,22 +4,81 @@ import java.util.List;
 import java.io.File;
 import java.util.Scanner;  
 import java.io.FileNotFoundException;
+import static java.lang.Thread.sleep;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MemorySimulator {
+    private static int alg;
     private static List<MMUPage> mmu;
     private static List<Process> processes;
     private static List<FileRow> pointers;
     private static Random random;
-    private static int nextFreeDADDR = 1; // Next free disk address 
     private static int nextFreeLADDR = 1; // Next free logical address 
     private static int nextPageID = 1;
     
+    // Obtener páginas 
+    
+    // Algoritmo LRU de reemplazo de páginas
+    public static void replacementLRU(MMUPage page){
+        
+    }
+    
+    // Algoritmo Second chance de reemplazo de páginas
+    public static void replacementSecondChance(MMUPage page){
+        
+    }
+    
+    // Algoritmo Aging de reemplazo de páginas
+    public static void replacementAging(MMUPage page){
+        
+    }
+    
+    // Algoritmo Random de reemplazo de páginas
+    public static void replacementRandom(MMUPage page){
+        int ranNum = random.nextInt(100)+1;
+        List<MMUPage> pages = loadedPages();
+        
+        MMUPage pageToReplace = pages.get(ranNum);
+        
+        // Sustituir la página seleccionada por la página que se desea cambiar
+        pageToReplace.setD_ADDR(getNextAvailableDADDR());
+        pageToReplace.setLoaded(false);
+        page.setM_ADDR(pageToReplace.getM_ADDR());
+        page.setLoaded(true);
+        
+        pageToReplace.setM_ADDR(-1);
+        page.setD_ADDR(-1); 
+    }
+    
+    public static int getNextAvailableDADDR(){
+        int nextAvailableDADDR = 1;
+        
+        List<Integer> allocatedAddresses = new LinkedList<>();       
+        
+        for (MMUPage mmuPage: mmu){
+            if (mmuPage.getM_ADDR() != -1){
+                allocatedAddresses.add(mmuPage.getD_ADDR());
+            }
+        }
+        
+        Collections.sort(allocatedAddresses);
+        
+        for (Integer D_ADDR : allocatedAddresses){
+            if (D_ADDR == nextAvailableDADDR) nextAvailableDADDR++;
+            else break;
+        }
+        
+        return nextAvailableDADDR;
+    }
+            
     public static List<Integer> emptyFrames(){
-        List<Integer> emptyFrames = IntStream.rangeClosed(0, 99).boxed().collect(Collectors.toList());
+        List<Integer> emptyFrames = IntStream.rangeClosed(1, 100).boxed().collect(Collectors.toList());
         for (MMUPage mmuPage: mmu){
             if (mmuPage.getM_ADDR() != -1){
                 emptyFrames.remove(mmuPage.getM_ADDR());
@@ -44,37 +103,31 @@ public class MemorySimulator {
         }
     }
     
-    public static boolean loadPage(MMUPage page){
+    public static void loadPage(MMUPage page){
         List<Integer> emptyFrames = emptyFrames();
         if (!emptyFrames.isEmpty()){
-            if (page.isLoaded()){
+            if (!page.isLoaded()){
                 page.setM_ADDR(emptyFrames.get(0));
                 page.setD_ADDR(-1);
                 page.setLoaded(true);
             }
-            return true;
         }else{
-            return false;
-        }
-    }
-    
-    public static Process getProcess(int PID){
-        for (Process process: processes){
-            if (process.getPID()==PID){
-                return process;
+            // Reemplazar páginas
+            switch(alg){
+                case 1 -> {
+                    replacementLRU(page);
+                }
+                case 2 -> {
+                    replacementSecondChance(page);
+                }
+                case 3 -> {
+                    replacementAging(page);
+                }
+                case 4 -> {
+                    replacementRandom(page);
+                }
             }
         }
-        return null;
-    }
-    
-    public static PointerMemoryAddress getallocatedMem(Process process, int ptrID){
-        List<PointerMemoryAddress> allocatedMem = process.getAllocatedMem();
-        for (PointerMemoryAddress address: allocatedMem){
-            if (address.getPointerID()==ptrID){
-                return address;
-            }
-        }
-        return null;
     }
     
     public static List<MMUPage> getPages(PointerMemoryAddress address){
@@ -150,8 +203,6 @@ public class MemorySimulator {
     public static int findPointer(int pointerID, List<PointerMemorySize> memSizePointers){
         int pointerPos = -1;
         
-        System.out.println(memSizePointers.toString());
-        
         for (PointerMemorySize pointer : memSizePointers){
             if(pointer.getPointerID() == pointerID) pointerPos = memSizePointers.indexOf(pointer);
         }
@@ -159,13 +210,13 @@ public class MemorySimulator {
         return pointerPos;
     }
     
-    public static void executeSimulator(File file, Random ran) {
+    public static void executeSimulator(File file, Random ran, int algorithm) throws InterruptedException {
         // Inicializaciones
         mmu = new LinkedList();
         pointers = new LinkedList();
         processes = new LinkedList();
         random = ran;
-        
+        alg = algorithm;
         
         // Leer archivo de punteros y rellenar información de los procesos
         List<FileRow> initialPointers = extractPointers(file);
@@ -203,6 +254,7 @@ public class MemorySimulator {
                 
                 nextFreeLADDR++;
             } 
+            pointerPos = findPointer(row.getPointerID(), process.getMemTotal());
             
             pointer = process.getAllocatedMem().get(pointerPos); // Obtener LADDR del puntero actual
             
@@ -210,15 +262,23 @@ public class MemorySimulator {
             List<MMUPage> pagesToLoad = getPages(pointer);
             
             loadPages(pagesToLoad);
+            
+            sleep(4000);
+            
+            System.out.println(mmu.toString());
         }
-        
-        System.out.println(mmu.toString());
     }
     
     public static void main(String args[]){
         File file = new File("C:\\Users\\Reyner\\Downloads\\procesos.txt");
         Random ran = new Random();
         ran.setSeed(12345L); // Establecer semilla para los valores randomizados
-        executeSimulator(file, ran);
+        int algorithm = 4;
+        
+        try {
+            executeSimulator(file, ran, algorithm);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MemorySimulator.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
