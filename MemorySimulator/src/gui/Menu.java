@@ -13,6 +13,7 @@ import javax.swing.JFileChooser;
  */
 public class Menu extends javax.swing.JFrame {
 
+    private static File file;
     /**
      * Creates new form Menu
      */
@@ -130,7 +131,7 @@ public class Menu extends javax.swing.JFrame {
         JFileChooser fc = new JFileChooser();
         fc.showOpenDialog(this);
         //Get the selected file
-        File file = fc.getSelectedFile();
+        file = fc.getSelectedFile();
         //Show the name of the selected file
         lblFile.setText(file.getName());
         //Give the file
@@ -138,7 +139,12 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnFileMouseClicked
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
-        // TODO add your handling code here:
+        Long seed = Long.valueOf(txtSeed.getText());
+        int algorithm = cmbAlgorithm.getSelectedIndex();
+        Simulation s = new Simulation();
+        s.start(file, seed, algorithm);
+        s.setVisible(true);
+        dispose();
     }//GEN-LAST:event_btnStartMouseClicked
 
     /**

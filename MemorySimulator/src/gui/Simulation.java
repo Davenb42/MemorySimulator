@@ -4,7 +4,12 @@
  */
 package gui;
 
+import java.io.File;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableColumn;
+import memorysimulator.MemorySimulator;
 
 /**
  *
@@ -26,6 +31,16 @@ public class Simulation extends javax.swing.JFrame {
         for (int i = 0; i < tblRamAlg.getColumnModel().getColumnCount(); i++) {
             TableColumn column = tblRamAlg.getColumnModel().getColumn(i);
             column.setMaxWidth(1);
+        }
+    }
+    
+    public void start(File file, Long seed, int algorithm){
+        Random ran = new Random();
+        ran.setSeed(seed); // Establecer semilla para los valores randomizados
+        try {
+            MemorySimulator.executeSimulator(file, ran, algorithm);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

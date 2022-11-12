@@ -22,6 +22,7 @@ public class MemorySimulator {
     private static int nextFreeLADDR = 1; // Next free logical address 
     private static int nextPageID = 1;
     
+    
     // Obtener páginas 
     
     // Algoritmo LRU de reemplazo de páginas
@@ -76,7 +77,11 @@ public class MemorySimulator {
         
         return nextAvailableDADDR;
     }
-            
+
+    public static List<MMUPage> getMMU(){
+        return mmu;
+    }
+
     public static List<Integer> emptyFrames(){
         List<Integer> emptyFrames = IntStream.rangeClosed(1, 100).boxed().collect(Collectors.toList());
         for (MMUPage mmuPage: mmu){
