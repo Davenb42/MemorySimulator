@@ -215,7 +215,7 @@ public class MemorySimulator {
         return pointerPos;
     }
     
-    public static void executeSimulator(File file, Random ran, int algorithm) throws InterruptedException {
+    public static void initializeSimulator(File file, Random ran, int algorithm){
         // Inicializaciones
         mmu = new LinkedList();
         pointers = new LinkedList();
@@ -228,50 +228,53 @@ public class MemorySimulator {
         
         // Barajar archivo de punteros y agregar accesos
         shuffleList(initialPointers); 
-        
-        // Ciclo principal para recorrer la lista de punteros
-        for (FileRow row : pointers){
-            
-            Process process;
-            int procPos = findProcess(row.getPID());
-            
-            if(procPos == -1){
-                process = new Process(row.getPID());
-                processes.add(process);
-            } else {
-                process = processes.get(procPos);
-            }
-            
-            PointerMemoryAddress pointer;
-            int pointerPos = findPointer(row.getPointerID(), process.getMemTotal());
-            
-            if (pointerPos == -1){
-                
-                process.addMemSyzePointer(row.getPointerID(), row.getMemSize());
-                
-                process.addMemAddrPointer(row.getPointerID(), nextFreeLADDR);
-                while(row.getMemSize() >= 0){
-                    MMUPage mmuPage = new MMUPage(nextPageID, process.getPID(), false, nextFreeLADDR, -1, -1, 0, -1);
-                    mmu.add(mmuPage);
-                    row.setMemSize(row.getMemSize()-4096);
-                    nextPageID++;
-                }
-                
-                nextFreeLADDR++;
-            } 
-            pointerPos = findPointer(row.getPointerID(), process.getMemTotal());
-            
-            pointer = process.getAllocatedMem().get(pointerPos); // Obtener LADDR del puntero actual
-            
-            // Obtener páginas de la MMU a asignar
-            List<MMUPage> pagesToLoad = getPages(pointer);
-            
-            loadPages(pagesToLoad);
-            
-            sleep(4000);
-            
-            System.out.println(mmu.toString());
+    }
+    
+    public static List<FileRow> getPointers(){
+        return pointers;
+    }
+    
+    // Ciclo principal para recorrer la lista de punteros
+    public static void executeNextIteration(FileRow row) throws InterruptedException{
+        Process process;
+        int procPos = findProcess(row.getPID());
+
+        if(procPos == -1){
+            process = new Process(row.getPID());
+            processes.add(process);
+        } else {
+            process = processes.get(procPos);
         }
+
+        PointerMemoryAddress pointer;
+        int pointerPos = findPointer(row.getPointerID(), process.getMemTotal());
+
+        if (pointerPos == -1){
+
+            process.addMemSyzePointer(row.getPointerID(), row.getMemSize());
+
+            process.addMemAddrPointer(row.getPointerID(), nextFreeLADDR);
+            while(row.getMemSize() >= 0){
+                MMUPage mmuPage = new MMUPage(nextPageID, process.getPID(), false, nextFreeLADDR, -1, -1, 0, -1);
+                mmu.add(mmuPage);
+                row.setMemSize(row.getMemSize()-4096);
+                nextPageID++;
+            }
+
+            nextFreeLADDR++;
+        } 
+        pointerPos = findPointer(row.getPointerID(), process.getMemTotal());
+
+        pointer = process.getAllocatedMem().get(pointerPos); // Obtener LADDR del puntero actual
+
+        // Obtener páginas de la MMU a asignar
+        List<MMUPage> pagesToLoad = getPages(pointer);
+
+        loadPages(pagesToLoad);
+
+        sleep(4000);
+
+        System.out.println(mmu.toString());
     }
     
     public static void main(String args[]){
@@ -279,11 +282,12 @@ public class MemorySimulator {
         Random ran = new Random();
         ran.setSeed(12345L); // Establecer semilla para los valores randomizados
         int algorithm = 4;
-        
+        /*
         try {
             executeSimulator(file, ran, algorithm);
         } catch (InterruptedException ex) {
             Logger.getLogger(MemorySimulator.class.getName()).log(Level.SEVERE, null, ex);
         }
+        */
     }
 }

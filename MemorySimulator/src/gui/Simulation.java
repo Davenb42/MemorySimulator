@@ -5,10 +5,12 @@
 package gui;
 
 import java.io.File;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableColumn;
+import memorysimulator.FileRow;
 import memorysimulator.MemorySimulator;
 
 /**
@@ -37,11 +39,7 @@ public class Simulation extends javax.swing.JFrame {
     public void start(File file, Long seed, int algorithm){
         Random ran = new Random();
         ran.setSeed(seed); // Establecer semilla para los valores randomizados
-        try {
-            MemorySimulator.executeSimulator(file, ran, algorithm);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        MemorySimulator.initializeSimulator(file, ran, algorithm);
     }
 
     /**
@@ -83,6 +81,11 @@ public class Simulation extends javax.swing.JFrame {
         tblFragmentationAlg = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         tblRamOpt.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -303,6 +306,17 @@ public class Simulation extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        List<FileRow> pointers = MemorySimulator.getPointers();
+        for(FileRow row:pointers){
+            try {
+                MemorySimulator.executeNextIteration(row);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_formWindowOpened
 
     /**
      * @param args the command line arguments
