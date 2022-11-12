@@ -4,6 +4,7 @@ import java.util.List;
 import java.io.File;
 import java.util.Scanner;  
 import java.io.FileNotFoundException;
+import static java.lang.Math.floor;
 import static java.lang.Thread.sleep;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -30,14 +31,45 @@ public class MemorySimulator {
         
     }
     
+    public static void agePages(){
+        List<MMUPage> pages = loadedPages();
+        for (MMUPage page:pages){
+            page.setMark((int)floor(page.getMark()/2));
+        }
+    }
+    
     // Algoritmo Second chance de reemplazo de páginas
     public static void replacementSecondChance(MMUPage page){
-        
+        if (!page.isLoaded()){
+            
+        }else{
+            page.setMark(1);
+        }
     }
     
     // Algoritmo Aging de reemplazo de páginas
     public static void replacementAging(MMUPage page){
-        
+        if (!page.isLoaded()){
+            List<MMUPage> loadedPages = loadedPages();
+            MMUPage pageToReplace = loadedPages.get(0);
+            for (MMUPage loadedPage:loadedPages){
+                if(pageToReplace.getMark() > loadedPage.getMark()){
+                    pageToReplace = loadedPage;
+                }
+            }
+            
+            // Sustituir la página seleccionada por la página que se desea cambiar
+            pageToReplace.setD_ADDR(getNextAvailableDADDR());
+            pageToReplace.setLoaded(false);
+            pageToReplace.setMark(0);
+            page.setM_ADDR(pageToReplace.getM_ADDR());
+            page.setLoaded(true);
+            
+            pageToReplace.setM_ADDR(-1);
+            page.setD_ADDR(-1); 
+        }else{
+            page.setMark(page.getMark()+128);
+        }
     }
     
     // Algoritmo Random de reemplazo de páginas
@@ -115,6 +147,15 @@ public class MemorySimulator {
                 page.setM_ADDR(emptyFrames.get(0));
                 page.setD_ADDR(-1);
                 page.setLoaded(true);
+            }else{
+                switch(alg){
+                    case 2 -> {
+                        page.setMark(1);
+                    }
+                    case 3 -> {
+                        page.setMark(page.getMark()+128);
+                    }
+                }
             }
         }else{
             // Reemplazar páginas
@@ -255,7 +296,7 @@ public class MemorySimulator {
 
             process.addMemAddrPointer(row.getPointerID(), nextFreeLADDR);
             while(row.getMemSize() >= 0){
-                MMUPage mmuPage = new MMUPage(nextPageID, process.getPID(), false, nextFreeLADDR, -1, -1, 0, -1);
+                MMUPage mmuPage = new MMUPage(nextPageID, process.getPID(), false, nextFreeLADDR, -1, -1, 0, 0);
                 mmu.add(mmuPage);
                 row.setMemSize(row.getMemSize()-4096);
                 nextPageID++;
@@ -269,7 +310,11 @@ public class MemorySimulator {
 
         // Obtener páginas de la MMU a asignar
         List<MMUPage> pagesToLoad = getPages(pointer);
-
+        switch(alg){
+                case 3 -> {
+                    agePages();
+                }
+            }
         loadPages(pagesToLoad);
 
         sleep(4000);
