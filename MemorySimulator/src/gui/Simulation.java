@@ -5,12 +5,18 @@
 package gui;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import memorysimulator.FileRow;
+import memorysimulator.MMUPage;
 import memorysimulator.MemorySimulator;
 
 /**
@@ -40,6 +46,53 @@ public class Simulation extends javax.swing.JFrame {
         Random ran = new Random();
         ran.setSeed(seed); // Establecer semilla para los valores randomizados
         MemorySimulator.initializeSimulator(file, ran, algorithm);
+    }
+    
+    public void startWorker(){
+        SwingWorker w = new SwingWorker(){
+            // Method
+            @Override
+            protected String doInBackground() throws Exception {
+                List<FileRow> pointers = MemorySimulator.getPointers();
+                // Defining what thread will do here
+                for (FileRow row:pointers) {
+                    Thread.sleep(100);
+                    try {
+                        MemorySimulator.executeNextIteration(row);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    publish(MemorySimulator.getMMU());
+                }
+  
+                String res = "Finished Execution";
+                return res;
+            }
+  
+            // Method
+            @Override 
+            protected void process(List mmu)
+            {
+                DefaultTableModel model = new DefaultTableModel();
+                LinkedList<MMUPage> pages =  (LinkedList<MMUPage>)mmu.get(mmu.size()-1);
+                model.addColumn("PAGE ID"); 
+                model.addColumn("PID");
+                model.addColumn("LOADED"); 
+                model.addColumn("L-ADDR");
+                model.addColumn("M-ADDR");
+                model.addColumn("D-ADDR");
+                model.addColumn("LOADED-T");
+                model.addColumn("MARK");
+                for(MMUPage page: pages){
+                    model.addRow(new Object[]
+                        {page.getPageID(), page.getPID(), page.isLoaded(), page.getL_ADDR(), 
+                            page.getM_ADDR(), page.getD_ADDR(), page.getLoadedT(), page.getMark()});
+                }
+                tblMmuAlg.setModel(model);
+            }
+        };
+        // Executes the swingworker on worker thread
+        w.execute();
     }
 
     /**
@@ -249,14 +302,15 @@ public class Simulation extends javax.swing.JFrame {
                     .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(88, 88, 88)
-                        .addComponent(jLabel8)
-                        .addGap(162, 162, 162)
-                        .addComponent(jLabel9))
-                    .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(88, 88, 88)
+                            .addComponent(jLabel8)
+                            .addGap(162, 162, 162)
+                            .addComponent(jLabel9))
+                        .addComponent(jScrollPane14, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane13, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 500, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -281,9 +335,9 @@ public class Simulation extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(66, 66, 66)
+                        .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -308,14 +362,8 @@ public class Simulation extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        List<FileRow> pointers = MemorySimulator.getPointers();
-        for(FileRow row:pointers){
-            try {
-                MemorySimulator.executeNextIteration(row);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        //Start thread to do the algorithm in the background
+        startWorker();
     }//GEN-LAST:event_formWindowOpened
 
     /**
