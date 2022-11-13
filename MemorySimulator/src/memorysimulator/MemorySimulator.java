@@ -55,7 +55,7 @@ public class MemorySimulator {
             // Sustituir la página seleccionada por la página que se desea cambiar
             pageToReplace.setD_ADDR(getNextAvailableDADDR());
             pageToReplace.setLoaded(false);
-            pageToReplace.setMark(0);
+            pageToReplace.setLoadedT(0);
             page.setM_ADDR(pageToReplace.getM_ADDR());
             page.setLoaded(true);
             
@@ -81,6 +81,7 @@ public class MemorySimulator {
             pageToReplace.setD_ADDR(getNextAvailableDADDR());
             pageToReplace.setLoaded(false);
             pageToReplace.setMark(0);
+            pageToReplace.setLoadedT(0);
             page.setM_ADDR(pageToReplace.getM_ADDR());
             page.setLoaded(true);
             
