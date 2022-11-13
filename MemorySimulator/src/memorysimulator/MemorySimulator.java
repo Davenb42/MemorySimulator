@@ -72,8 +72,12 @@ public class MemorySimulator {
             List<MMUPage> loadedPages = loadedPages();
             MMUPage pageToReplace = loadedPages.get(0);
             for (MMUPage loadedPage:loadedPages){
-                if(pageToReplace.getLoadedT() < loadedPage.getLoadedT() && loadedPage.getMark() == 0){
-                    pageToReplace = loadedPage;
+                if(pageToReplace.getLoadedT() < loadedPage.getLoadedT()){
+                    if ( loadedPage.getMark() == 0){
+                        pageToReplace = loadedPage;
+                    }else{
+                        loadedPage.setMark(0);
+                    }
                 }
             }
             
