@@ -8,14 +8,18 @@ import static java.lang.Math.floor;
 import static java.lang.Thread.sleep;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.Collections;
+import java.util.ArrayList;
 
 public class MemorySimulator {
     private static int alg;
+    private static int iterationCounter = 0;
     private static List<MMUPage> mmu;
     private static List<Process> processes;
     private static List<FileRow> pointers;
@@ -36,8 +40,68 @@ public class MemorySimulator {
     public static void advanceTime(){
         List<MMUPage> pages = loadedPages();
         for (MMUPage page:pages){
-            page.setMark(page.getMark()+1);
+            page.setLoadedT(page.getLoadedT()+1);
         }
+    }
+    
+    // Algoritmo Optimo
+    public static void replacementOptimal(MMUPage page){
+        if (!page.isLoaded()){
+            List<MMUPage> loadedPages = loadedPages();
+            MMUPage pageToReplace = null;
+            List<MMUPage> pagesToCall = new LinkedList<>();
+            int size = 0;
+            for (FileRow fileRow : pointers){
+                if(size >=  iterationCounter+1){
+                    if(findProcess(fileRow.getPID())!=-1){
+                        List<PointerMemorySize> memSizePointers = processes.get(fileRow.getPID()).getMemTotal();
+                        if (findPointer(fileRow.getPointerID(), memSizePointers)!=-1){
+                            List<MMUPage> pagesToCheck = getPages(processes.get(fileRow.getPID()).getAllocatedMem().get(fileRow.getPointerID()));
+                            for(MMUPage pageToCheck : pagesToCheck){
+                                pagesToCall.add(pageToCheck);
+                            }
+                        }
+                    }
+                }
+                size++;
+            }
+            
+            //Borrar las paginas que si se llamaran de nuevo para determinar si alguna no se volverá a llamar
+            for (MMUPage pageToCall : pagesToCall){
+                if(loadedPages.contains(pageToCall)){
+                    loadedPages.remove(pageToCall);
+                }
+            }
+            
+            if(loadedPages.isEmpty()){ //No hay paginas que no se volverán a llamar
+                //Rellenar las paginas cargadas
+                loadedPages = loadedPages();
+                //La pagina que está cargada y está más lejos de ser llamada de nuevo será la página a reemplazar 
+                for (MMUPage pageToCall : pagesToCall){
+                    if(loadedPages.contains(pageToCall)){ //La página a cargar ya está cargada
+                        if(pageToReplace != pageToCall){ //Es diferente a la que se encontró
+                            if(pageToReplace != null){ //No es la primera iteración
+                                loadedPages.remove(pageToReplace); //Se encontró un candidato nuevo, no necesitamos al anterior
+                            }
+                            pageToReplace = pageToCall; //Se asigna un nuevo candidato
+                        }
+                    }
+                }
+            }else{
+                //La primer pagina que no se volverá a llamar será la página a reemplazar
+                pageToReplace = loadedPages.get(0);
+            }
+            // Sustituir la página seleccionada por la página que se desea cambiar
+            pageToReplace.setD_ADDR(getNextAvailableDADDR());
+            pageToReplace.setLoaded(false);
+            pageToReplace.setLoadedT(0);
+            page.setM_ADDR(pageToReplace.getM_ADDR());
+            page.setLoaded(true);
+            
+            pageToReplace.setM_ADDR(-1);
+            page.setD_ADDR(-1);
+        }
+        
     }
     
     // Algoritmo LRU de reemplazo de páginas
@@ -223,7 +287,7 @@ public class MemorySimulator {
                     replacementAging(page);
                 }
                 case 4 -> {
-                    replacementRandom(page);
+                    replacementOptimal(page);
                 }
             }
         }
@@ -375,15 +439,16 @@ public class MemorySimulator {
                 agePages();
             }
         }
-        loadPages(pagesToLoad);
 
+        loadPages(pagesToLoad);
+        iterationCounter++;
         sleep(5000);
 
         //System.out.println(mmu.toString());
     }
     
     public static void main(String args[]){
-        File file = new File("C:\\Users\\Reyner\\Downloads\\procesos.txt");
+        File file = new File("C:\\Users\\Dell\\Downloads\\procesos.txt");
         Random ran = new Random();
         ran.setSeed(12345L); // Establecer semilla para los valores randomizados
         int algorithm = 4;
