@@ -360,13 +360,16 @@ public class MemorySimulator {
         // Obtener páginas de la MMU a asignar
         List<MMUPage> pagesToLoad = getPages(pointer);
         switch(alg){
-                case 2 -> {
-                    advanceTime();
-                }
-                case 3 -> {
-                    agePages();
-                }
+            case 1 -> {
+                advanceTime();
             }
+            case 2 -> {
+                advanceTime();
+            }
+            case 3 -> {
+                agePages();
+            }
+        }
         loadPages(pagesToLoad);
 
         sleep(4000);
