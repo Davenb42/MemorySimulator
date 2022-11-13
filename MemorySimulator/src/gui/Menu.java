@@ -140,7 +140,7 @@ public class Menu extends javax.swing.JFrame {
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
         Long seed = Long.valueOf(txtSeed.getText());
-        int algorithm = cmbAlgorithm.getSelectedIndex();
+        int algorithm = cmbAlgorithm.getSelectedIndex()+1;
         Simulation s = new Simulation();
         s.start(file, seed, algorithm);
         s.setVisible(true);

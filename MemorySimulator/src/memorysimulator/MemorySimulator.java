@@ -123,7 +123,7 @@ public class MemorySimulator {
     
     // Algoritmo Random de reemplazo de páginas
     public static void replacementRandom(MMUPage page){
-        int ranNum = random.nextInt(100)+1;
+        int ranNum = random.nextInt(5)+1;
         List<MMUPage> pages = loadedPages();
         
         MMUPage pageToReplace = pages.get(ranNum);
@@ -144,7 +144,7 @@ public class MemorySimulator {
         List<Integer> allocatedAddresses = new LinkedList<>();       
         
         for (MMUPage mmuPage: mmu){
-            if (mmuPage.getM_ADDR() != -1){
+            if (mmuPage.getD_ADDR() != -1){
                 allocatedAddresses.add(mmuPage.getD_ADDR());
             }
         }
@@ -163,11 +163,11 @@ public class MemorySimulator {
         return mmu;
     }
 
-    public static List<Integer> emptyFrames(){
-        List<Integer> emptyFrames = IntStream.rangeClosed(1, 100).boxed().collect(Collectors.toList());
+    public static List<Integer> getEmptyFrames(){
+        List<Integer> emptyFrames = IntStream.rangeClosed(1, 5).boxed().collect(Collectors.toList());
         for (MMUPage mmuPage: mmu){
             if (mmuPage.getM_ADDR() != -1){
-                emptyFrames.remove(mmuPage.getM_ADDR());
+                emptyFrames.remove(emptyFrames.indexOf(mmuPage.getM_ADDR()));
             }
         }
         return emptyFrames;
@@ -190,7 +190,7 @@ public class MemorySimulator {
     }
     
     public static void loadPage(MMUPage page){
-        List<Integer> emptyFrames = emptyFrames();
+        List<Integer> emptyFrames = getEmptyFrames();
         if (!emptyFrames.isEmpty()){
             if (!page.isLoaded()){
                 page.setM_ADDR(emptyFrames.get(0));
@@ -361,6 +361,7 @@ public class MemorySimulator {
 
         pointer = process.getAllocatedMem().get(pointerPos); // Obtener LADDR del puntero actual
 
+        
         // Obtener páginas de la MMU a asignar
         List<MMUPage> pagesToLoad = getPages(pointer);
         switch(alg){
@@ -376,9 +377,9 @@ public class MemorySimulator {
         }
         loadPages(pagesToLoad);
 
-        sleep(4000);
+        sleep(5000);
 
-        System.out.println(mmu.toString());
+        //System.out.println(mmu.toString());
     }
     
     public static void main(String args[]){
