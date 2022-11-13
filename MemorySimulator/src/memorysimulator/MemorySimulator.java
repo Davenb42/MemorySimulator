@@ -26,11 +26,6 @@ public class MemorySimulator {
     
     // Obtener páginas 
     
-    // Algoritmo LRU de reemplazo de páginas
-    public static void replacementLRU(MMUPage page){
-        
-    }
-    
     public static void agePages(){
         List<MMUPage> pages = loadedPages();
         for (MMUPage page:pages){
@@ -38,10 +33,59 @@ public class MemorySimulator {
         }
     }
     
+    public static void advanceTime(){
+        List<MMUPage> pages = loadedPages();
+        for (MMUPage page:pages){
+            page.setMark(page.getMark()+1);
+        }
+    }
+    
+    // Algoritmo LRU de reemplazo de páginas
+    public static void replacementLRU(MMUPage page){
+        if (!page.isLoaded()){
+            List<MMUPage> loadedPages = loadedPages();
+            MMUPage pageToReplace = loadedPages.get(0);
+            
+            for (MMUPage loadedPage:loadedPages){
+                if(pageToReplace.getLoadedT() < loadedPage.getLoadedT()){
+                    pageToReplace = loadedPage;
+                }
+            }
+            
+            // Sustituir la página seleccionada por la página que se desea cambiar
+            pageToReplace.setD_ADDR(getNextAvailableDADDR());
+            pageToReplace.setLoaded(false);
+            pageToReplace.setMark(0);
+            page.setM_ADDR(pageToReplace.getM_ADDR());
+            page.setLoaded(true);
+            
+            pageToReplace.setM_ADDR(-1);
+            page.setD_ADDR(-1);
+        }else{
+            page.setLoadedT(0);
+        }
+    }
+    
     // Algoritmo Second chance de reemplazo de páginas
     public static void replacementSecondChance(MMUPage page){
         if (!page.isLoaded()){
+            List<MMUPage> loadedPages = loadedPages();
+            MMUPage pageToReplace = loadedPages.get(0);
+            for (MMUPage loadedPage:loadedPages){
+                if(pageToReplace.getLoadedT() < loadedPage.getLoadedT() && loadedPage.getMark() == 0){
+                    pageToReplace = loadedPage;
+                }
+            }
             
+            // Sustituir la página seleccionada por la página que se desea cambiar
+            pageToReplace.setD_ADDR(getNextAvailableDADDR());
+            pageToReplace.setLoaded(false);
+            pageToReplace.setMark(0);
+            page.setM_ADDR(pageToReplace.getM_ADDR());
+            page.setLoaded(true);
+            
+            pageToReplace.setM_ADDR(-1);
+            page.setD_ADDR(-1);
         }else{
             page.setMark(1);
         }
@@ -147,8 +191,12 @@ public class MemorySimulator {
                 page.setM_ADDR(emptyFrames.get(0));
                 page.setD_ADDR(-1);
                 page.setLoaded(true);
+                
             }else{
                 switch(alg){
+                    case 1 -> {
+                        page.setLoadedT(0);
+                    }
                     case 2 -> {
                         page.setMark(1);
                     }
@@ -311,6 +359,9 @@ public class MemorySimulator {
         // Obtener páginas de la MMU a asignar
         List<MMUPage> pagesToLoad = getPages(pointer);
         switch(alg){
+                case 2 -> {
+                    advanceTime();
+                }
                 case 3 -> {
                     agePages();
                 }
