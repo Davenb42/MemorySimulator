@@ -208,7 +208,7 @@ public class MemorySimulator {
     // Algoritmo Random de reemplazo de páginas
     public static void replacementRandom(MMUPage page){
         if (!page.isLoaded()){
-            int ranNum = random.nextInt(5)+1;
+            int ranNum = random.nextInt(100)+1;
             List<MMUPage> pages = loadedPages();
 
             MMUPage pageToReplace = pages.get(ranNum);
@@ -276,7 +276,7 @@ public class MemorySimulator {
     }
 
     public static List<Integer> getEmptyFrames(){
-        List<Integer> emptyFrames = IntStream.rangeClosed(1, 5).boxed().collect(Collectors.toList());
+        List<Integer> emptyFrames = IntStream.rangeClosed(1, 100).boxed().collect(Collectors.toList());
         for (MMUPage mmuPage: mmu){
             if (mmuPage.getM_ADDR() != -1){
                 emptyFrames.remove(emptyFrames.indexOf(mmuPage.getM_ADDR()));
@@ -286,7 +286,7 @@ public class MemorySimulator {
     }
     
     public static List<Integer> getEmptyFramesOpt(){
-        List<Integer> emptyFramesOpt = IntStream.rangeClosed(1, 5).boxed().collect(Collectors.toList());
+        List<Integer> emptyFramesOpt = IntStream.rangeClosed(1, 100).boxed().collect(Collectors.toList());
         for (MMUPage mmuPageOpt: mmuOpt){
             if (mmuPageOpt.getM_ADDR() != -1){
                 emptyFramesOpt.remove(emptyFramesOpt.indexOf(mmuPageOpt.getM_ADDR()));
@@ -346,7 +346,7 @@ public class MemorySimulator {
     }
     
     public static float ramPercentage(){
-        return (float)(loadedPagesQuantity())*(float)(100.0/5.0);
+        return (float)(loadedPagesQuantity())*(float)(100.0/100.0);
     }
     
     public static int vRamKB(){
@@ -417,7 +417,7 @@ public class MemorySimulator {
     }
     
     public static float ramPercentageOpt(){
-        return ((float)loadedPagesQuantityOpt())*(float)(100.0/5.0);
+        return ((float)loadedPagesQuantityOpt())*(float)(100.0/100.0);
     }
     
     public static int vRamKBOpt(){
