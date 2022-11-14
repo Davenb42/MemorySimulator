@@ -59,6 +59,7 @@ public class Simulation extends javax.swing.JFrame {
                     Thread.sleep(100);
                     try {
                         MemorySimulator.executeNextIteration(row);
+                        
                     } catch (InterruptedException ex) {
                         Logger.getLogger(Simulation.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -89,6 +90,26 @@ public class Simulation extends javax.swing.JFrame {
                             page.getM_ADDR(), page.getD_ADDR(), page.getLoadedT(), page.getMark()});
                 }
                 tblMmuAlg.setModel(model);
+                model = new DefaultTableModel();
+                model.addColumn("Processes");
+                model.addColumn("Sim-Time");
+                model.addRow(new Object[]{MemorySimulator.processesQuantity(), MemorySimulator.getSimTime()+"s"});
+                tblSimTimeAlg.setModel(model);
+                model = new DefaultTableModel();
+                model.addColumn("RAM KB");
+                model.addColumn("RAM %");
+                model.addColumn("V-RAM KB");
+                model.addColumn("V-RAM %");
+                model.addRow(new Object[]{MemorySimulator.ramKB(), MemorySimulator.ramPercentage()+"%",MemorySimulator.vRamKB(),MemorySimulator.vRamPercentage()+"%"});
+                tblRamStatsAlg.setModel(model);
+                model = new DefaultTableModel();
+                model.addColumn("Loaded");
+                model.addColumn("Unloaded");
+                model.addColumn("Thrashing");
+                model.addColumn("Thrashing %");
+                model.addColumn("Fragmentación");
+                model.addRow(new Object[]{MemorySimulator.loadedPagesQuantity(), MemorySimulator.unLoadedPagesQuantity(),MemorySimulator.getThrashingSimTime()+"s",MemorySimulator.getThrashingPercentage()+"%",0});
+                tblFragmentationAlg.setModel(model);
             }
         };
         // Executes the swingworker on worker thread
