@@ -73,6 +73,7 @@ public class Simulation extends javax.swing.JFrame {
             protected void process(List mmu)
             {
                 // Opt cargar datos
+                int counter = 0;
                 DefaultTableModel model = new DefaultTableModel();
                 LinkedList<MMUPage> pages = (LinkedList<MMUPage>)mmu.get(mmu.size()-1);
                 model.addColumn("PAGE ID"); 
@@ -83,33 +84,16 @@ public class Simulation extends javax.swing.JFrame {
                 model.addColumn("D-ADDR");
                 model.addColumn("LOADED-T");
                 model.addColumn("MARK");
-                for(int i = 0; i < mmu.size(); i++){
-                    model.addRow(new Object[]
-                        {pages.get(i).getPageID(), pages.get(i).getPID(), pages.get(i).isLoaded(), pages.get(i).getL_ADDR(), 
-                            pages.get(i).getM_ADDR(), pages.get(i).getD_ADDR(), pages.get(i).getLoadedT(), pages.get(i).getMark()});
+                for(MMUPage page : pages){
+                    if(counter < pages.size()/2) {
+                        model.addRow(new Object[]
+                        {page.getPageID(), page.getPID(), page.isLoaded(), page.getL_ADDR(), 
+                            page.getM_ADDR(), page.getD_ADDR(), page.getLoadedT(), page.getMark()});
+                        counter++;
+                    }
                 }
                 tblMmuOpt.setModel(model);
-                /*model = new DefaultTableModel();
-                model.addColumn("Processes");
-                model.addColumn("Sim-Time");
-                model.addRow(new Object[]{MemorySimulator.processesQuantity(), MemorySimulator.getSimTime()+"s"});
-                tblSimTimeOpt.setModel(model);
-                model = new DefaultTableModel();
-                model.addColumn("RAM KB");
-                model.addColumn("RAM %");
-                model.addColumn("V-RAM KB");
-                model.addColumn("V-RAM %");
-                model.addRow(new Object[]{MemorySimulator.ramKB(), MemorySimulator.ramPercentage()+"%",MemorySimulator.vRamKB(),MemorySimulator.vRamPercentage()+"%"});
-                tblRamStatsOpt.setModel(model);
-                model = new DefaultTableModel();
-                model.addColumn("Loaded");
-                model.addColumn("Unloaded");
-                model.addColumn("Thrashing");
-                model.addColumn("Thrashing %");
-                model.addColumn("Fragmentación");
-                model.addRow(new Object[]{MemorySimulator.loadedPagesQuantity(), MemorySimulator.unLoadedPagesQuantity(),MemorySimulator.getThrashingSimTime()+"s",MemorySimulator.getThrashingPercentage()+"%",0});
-                tblFragmentationOpt.setModel(model);
-                
+                counter = pages.size()/2;
                 model = new DefaultTableModel();
                 model.addColumn("PAGE ID"); 
                 model.addColumn("PID");
@@ -119,12 +103,37 @@ public class Simulation extends javax.swing.JFrame {
                 model.addColumn("D-ADDR");
                 model.addColumn("LOADED-T");
                 model.addColumn("MARK");
-                for(int i = mmu.size()/2; i < mmu.size(); i++){
-                    model.addRow(new Object[]
-                        {pages.get(i).getPageID(), pages.get(i).getPID(), pages.get(i).isLoaded(), pages.get(i).getL_ADDR(), 
-                            pages.get(i).getM_ADDR(), pages.get(i).getD_ADDR(), pages.get(i).getLoadedT(), pages.get(i).getMark()});
+                for(MMUPage page : pages){
+                    if(counter < pages.size()) {
+                        model.addRow(new Object[]
+                        {page.getPageID(), page.getPID(), page.isLoaded(), page.getL_ADDR(), 
+                            page.getM_ADDR(), page.getD_ADDR(), page.getLoadedT(), page.getMark()});
+                        counter++;
+                    }
                 }
-                tblMmuAlg.setModel(model);*/
+                tblMmuAlg.setModel(model);
+                
+                model = new DefaultTableModel();
+                model.addColumn("Processes");
+                model.addColumn("Sim-Time");
+                model.addRow(new Object[]{MemorySimulator.processesQuantityOpt(), MemorySimulator.getSimTimeOpt()+"s"});
+                tblSimTimeOpt.setModel(model);
+                model = new DefaultTableModel();
+                model.addColumn("RAM KB");
+                model.addColumn("RAM %");
+                model.addColumn("V-RAM KB");
+                model.addColumn("V-RAM %");
+                model.addRow(new Object[]{MemorySimulator.ramKBOpt(), MemorySimulator.ramPercentageOpt()+"%",MemorySimulator.vRamKBOpt(),MemorySimulator.vRamPercentageOpt()+"%"});
+                tblRamStatsOpt.setModel(model);
+                model = new DefaultTableModel();
+                model.addColumn("Loaded");
+                model.addColumn("Unloaded");
+                model.addColumn("Thrashing");
+                model.addColumn("Thrashing %");
+                model.addColumn("Fragmentación");
+                model.addRow(new Object[]{MemorySimulator.loadedPagesQuantityOpt(), MemorySimulator.unLoadedPagesQuantityOpt(),MemorySimulator.getThrashingSimTimeOpt()+"s",MemorySimulator.getThrashingPercentageOpt()+"%",0});
+                tblFragmentationOpt.setModel(model);
+                
                 model = new DefaultTableModel();
                 model.addColumn("Processes");
                 model.addColumn("Sim-Time");

@@ -57,60 +57,60 @@ public class MemorySimulator {
     // Algoritmo Optimo
     public static void replacementOptimal(MMUPage page){
         if (!page.isLoaded()){
-            List<MMUPage> loadedPages = loadedPages();
-            MMUPage pageToReplace = null;
-            List<MMUPage> pagesToCall = new LinkedList<>();
-            int size = 0;
+            List<MMUPage> loadedPagesOpt = loadedPagesOpt();
+            MMUPage pageToReplaceOpt = null;
+            List<MMUPage> pagesToCallOpt = new LinkedList<>();
+            int sizeOpt = 0;
             for (FileRow fileRow : pointers){
-                if(size >= iterationCounter+1){
-                    if(findProcess(fileRow.getPID())!=-1){
-                        int pos = findProcess(fileRow.getPID());
-                        List<PointerMemorySize> memSizePointers = processes.get(pos).getMemTotal();
-                        if (findPointer(fileRow.getPointerID(), memSizePointers)!=-1){
-                            int pointerPos = findPointer(fileRow.getPointerID(), memSizePointers);
-                            List<MMUPage> pagesToCheck = getPages(processes.get(pos).getAllocatedMem().get(pointerPos));
-                            for(MMUPage pageToCheck : pagesToCheck){
-                                pagesToCall.add(pageToCheck);
+                if(sizeOpt >= iterationCounter+1){
+                    if(findProcessOpt(fileRow.getPID())!=-1){
+                        int posOpt = findProcessOpt(fileRow.getPID());
+                        List<PointerMemorySize> memSizePointersOpt = processesOpt.get(posOpt).getMemTotal();
+                        if (findPointer(fileRow.getPointerID(), memSizePointersOpt)!=-1){
+                            int pointerPosOpt = findPointer(fileRow.getPointerID(), memSizePointersOpt);
+                            List<MMUPage> pagesToCheckOpt = getPagesOpt(processesOpt.get(posOpt).getAllocatedMem().get(pointerPosOpt));
+                            for(MMUPage pageToCheckOpt : pagesToCheckOpt){
+                                pagesToCallOpt.add(pageToCheckOpt);
                             }
                         }
                     }
                 }
-                size++;
+                sizeOpt++;
             }
             
             //Borrar las paginas que si se llamaran de nuevo para determinar si alguna no se volverá a llamar
-            for (MMUPage pageToCall : pagesToCall){
-                if(loadedPages.contains(pageToCall)){
-                    loadedPages.remove(pageToCall);
+            for (MMUPage pageToCall : pagesToCallOpt){
+                if(loadedPagesOpt.contains(pageToCall)){
+                    loadedPagesOpt.remove(pageToCall);
                 }
             }
             
-            if(loadedPages.isEmpty()){ //No hay paginas que no se volverán a llamar
+            if(loadedPagesOpt.isEmpty()){ //No hay paginas que no se volverán a llamar
                 //Rellenar las paginas cargadas
-                loadedPages = loadedPages();
+                loadedPagesOpt = loadedPages();
                 //La pagina que está cargada y está más lejos de ser llamada de nuevo será la página a reemplazar 
-                for (MMUPage pageToCall : pagesToCall){
-                    if(loadedPages.contains(pageToCall)){ //La página a cargar ya está cargada
-                        if(pageToReplace != pageToCall){ //Es diferente a la que se encontró
-                            if(pageToReplace != null){ //No es la primera iteración
-                                loadedPages.remove(pageToReplace); //Se encontró un candidato nuevo, no necesitamos al anterior
+                for (MMUPage pageToCallOpt : pagesToCallOpt){
+                    if(loadedPagesOpt.contains(pageToCallOpt)){ //La página a cargar ya está cargada
+                        if(pageToReplaceOpt != pageToCallOpt){ //Es diferente a la que se encontró
+                            if(pageToReplaceOpt != null){ //No es la primera iteración
+                                loadedPagesOpt.remove(pageToReplaceOpt); //Se encontró un candidato nuevo, no necesitamos al anterior
                             }
-                            pageToReplace = pageToCall; //Se asigna un nuevo candidato
+                            pageToReplaceOpt = pageToCallOpt; //Se asigna un nuevo candidato
                         }
                     }
                 }
             }else{
                 //La primer pagina que no se volverá a llamar será la página a reemplazar
-                pageToReplace = loadedPages.get(0);
+                pageToReplaceOpt = loadedPagesOpt.get(0);
             }
             // Sustituir la página seleccionada por la página que se desea cambiar
-            pageToReplace.setD_ADDR(getNextAvailableDADDR());
-            pageToReplace.setLoaded(false);
-            pageToReplace.setLoadedT(0);
-            page.setM_ADDR(pageToReplace.getM_ADDR());
+            pageToReplaceOpt.setD_ADDR(getNextAvailableDADDR());
+            pageToReplaceOpt.setLoaded(false);
+            pageToReplaceOpt.setLoadedT(0);
+            page.setM_ADDR(pageToReplaceOpt.getM_ADDR());
             page.setLoaded(true);
             
-            pageToReplace.setM_ADDR(-1);
+            pageToReplaceOpt.setM_ADDR(-1);
             page.setD_ADDR(-1);
             thrashingSimTimeOpt+=5;
         }else{
@@ -284,6 +284,16 @@ public class MemorySimulator {
         return loadedPages;
     }
     
+    public static List<MMUPage> loadedPagesOpt(){
+        List<MMUPage> loadedPagesOpt = new LinkedList<>();
+        for (MMUPage mmuPageOpt: mmuOpt){
+            if (mmuPageOpt.isLoaded()){
+                loadedPagesOpt.add(mmuPageOpt);
+            }
+        }
+        return loadedPagesOpt;
+    }
+    
     public static int loadedPagesQuantity(){
         List<MMUPage> loadedPages = new LinkedList<>();
         for (MMUPage mmuPage: mmu){
@@ -425,7 +435,7 @@ public class MemorySimulator {
         return thrashingSimTimeOpt*(100/getSimTimeOpt());
     }
     
-    public static void loadPages(List<MMUPage> pages){
+    public static void loadPages(List<MMUPage> pages) throws InterruptedException{
         for (MMUPage page: pages){
             loadPage(page);
         }
@@ -437,14 +447,13 @@ public class MemorySimulator {
         }
     }
     
-    public static void loadPage(MMUPage page){
+    public static void loadPage(MMUPage page) throws InterruptedException{
         List<Integer> emptyFrames = getEmptyFrames();
         if (!emptyFrames.isEmpty()){
             if (!page.isLoaded()){
                 page.setM_ADDR(emptyFrames.get(0));
                 page.setD_ADDR(-1);
                 page.setLoaded(true);
-                
             }else{
                 switch(alg){
                     case 1 -> {
@@ -458,6 +467,7 @@ public class MemorySimulator {
                     }
                 }
             }
+            sleep(1000);
             normalSimTime++;
         }else{
             // Reemplazar páginas
@@ -475,6 +485,7 @@ public class MemorySimulator {
                     replacementRandom(page);
                 }
             }
+            sleep(5000);
         }
     }
     
@@ -549,13 +560,9 @@ public class MemorySimulator {
     
     public static int findProcessOpt(int PID){
         int exists = -1;
-        
-        if(!processesOpt.isEmpty()){
-            for (Process processOpt : processesOpt){
-                if(processOpt.getPID() == PID) exists = processesOpt.indexOf(processOpt);
-            }
+        for (Process processOpt : processesOpt){
+            if(processOpt.getPID() == PID) exists = processesOpt.indexOf(processOpt);
         }
-        
         return exists;
     }
     
@@ -601,6 +608,8 @@ public class MemorySimulator {
         mmu = new LinkedList();
         pointers = new LinkedList();
         processes = new LinkedList();
+        mmuOpt = new LinkedList();
+        processesOpt = new LinkedList();
         random = ran;
         alg = algorithm;
         
@@ -619,13 +628,23 @@ public class MemorySimulator {
     public static void executeNextIteration(FileRow row) throws InterruptedException{
         // Alg Part
         Process process;
+        Process processOpt;
+        
+        
         int procPos = findProcess(row.getPID());
-
+        
+        int procPosOpt = findProcessOpt(row.getPID());
         if(procPos == -1){
             process = new Process(row.getPID());
             processes.add(process);
         } else {
             process = processes.get(procPos);
+        }
+        if(procPosOpt == -1){
+            processOpt = new Process(row.getPID());
+            processesOpt.add(processOpt);
+        } else {
+            processOpt = processesOpt.get(procPosOpt);
         }
 
         PointerMemoryAddress pointer;
@@ -646,9 +665,35 @@ public class MemorySimulator {
             row.setMemSize(size);
             nextFreeLADDR++;
         } 
+        
+        PointerMemoryAddress pointerOpt;
+        int pointerPosOpt = findPointer(row.getPointerID(), processOpt.getMemTotal());
+        
+        if (pointerPosOpt == -1){
+
+            processOpt.addMemSyzePointer(row.getPointerID(), row.getMemSize());
+
+            processOpt.addMemAddrPointer(row.getPointerID(), nextFreeLADDROpt);
+
+            int sizeOpt = row.getMemSize();
+            while(row.getMemSize() >= 0){
+                MMUPage mmuPageOpt = new MMUPage(nextPageIDOpt, processOpt.getPID(), false, nextFreeLADDROpt, -1, -1, 0, 0);
+                mmuOpt.add(mmuPageOpt);
+                row.setMemSize(row.getMemSize()-4096);
+                nextPageIDOpt++;
+            }
+            row.setMemSize(sizeOpt);
+            nextFreeLADDROpt++;
+        } 
+        
+        
         pointerPos = findPointer(row.getPointerID(), process.getMemTotal());
 
         pointer = process.getAllocatedMem().get(pointerPos); // Obtener LADDR del puntero actual
+        
+        pointerPosOpt = findPointer(row.getPointerID(), processOpt.getMemTotal());
+
+        pointerOpt = processOpt.getAllocatedMem().get(pointerPosOpt); // Obtener LADDR del puntero actual
 
         
         // Obtener páginas de la MMU a asignar
@@ -666,53 +711,13 @@ public class MemorySimulator {
         }
         
         loadPages(pagesToLoad);
-        iterationCounter++;
         
-        // Parte algoritmo óptimo
-        Process processOpt;
-        int procPosOpt = findProcessOpt(row.getPID());
-
-        if(procPosOpt == -1){
-            processOpt = new Process(row.getPID());
-            processesOpt.add(processOpt);
-        } else {
-            processOpt = processesOpt.get(procPosOpt);
-        }
-        System.out.println(mmu.toString());
-
-        PointerMemoryAddress pointerOpt;
-        int pointerPosOpt = findPointer(row.getPointerID(), processOpt.getMemTotal());
-        System.out.println(mmu.toString());
-        if (pointerPosOpt == -1){
-
-            processOpt.addMemSyzePointer(row.getPointerID(), row.getMemSize());
-System.out.println(mmu.toString());
-            processOpt.addMemAddrPointer(row.getPointerID(), nextFreeLADDROpt);
-            System.out.println(mmu.toString());
-            int sizeOpt = row.getMemSize();
-            while(row.getMemSize() >= 0){
-                MMUPage mmuPageOpt = new MMUPage(nextPageIDOpt, processOpt.getPID(), false, nextFreeLADDROpt, -1, -1, 0, 0);
-                mmuOpt.add(mmuPageOpt);
-                row.setMemSize(row.getMemSize()-4096);
-                nextPageIDOpt++;
-            }
-            System.out.println(mmu.toString());
-            row.setMemSize(sizeOpt);
-            nextFreeLADDROpt++;
-        } 
-        System.out.println(mmu.toString());
-        pointerPosOpt = findPointer(row.getPointerID(), processOpt.getMemTotal());
-System.out.println(mmu.toString());
-        pointerOpt = processOpt.getAllocatedMem().get(pointerPosOpt); // Obtener LADDR del puntero actual
-
-        
-        // Obtener páginas de la MMU a asignar
         List<MMUPage> pagesToLoadOpt = getPagesOpt(pointerOpt);
-System.out.println(mmu.toString());
+
         
         loadPagesOpt(pagesToLoadOpt);
-        System.out.println(mmu.toString());
         
+        iterationCounter++;
         //sleep(5000);
         //System.out.println(mmu.toString());
     }
