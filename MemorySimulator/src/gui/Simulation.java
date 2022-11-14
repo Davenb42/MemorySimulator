@@ -93,7 +93,6 @@ public class Simulation extends javax.swing.JFrame {
                     }
                 }
                 tblMmuOpt.setModel(model);
-                counter = pages.size()/2;
                 model = new DefaultTableModel();
                 model.addColumn("PAGE ID"); 
                 model.addColumn("PID");
@@ -104,7 +103,7 @@ public class Simulation extends javax.swing.JFrame {
                 model.addColumn("LOADED-T");
                 model.addColumn("MARK");
                 for(MMUPage page : pages){
-                    if(counter < pages.size()) {
+                    if(counter >= pages.size()/2) {
                         model.addRow(new Object[]
                         {page.getPageID(), page.getPID(), page.isLoaded(), page.getL_ADDR(), 
                             page.getM_ADDR(), page.getD_ADDR(), page.getLoadedT(), page.getMark()});
