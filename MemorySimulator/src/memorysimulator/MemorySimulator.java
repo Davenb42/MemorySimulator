@@ -104,7 +104,7 @@ public class MemorySimulator {
                 pageToReplaceOpt = loadedPagesOpt.get(0);
             }
             // Sustituir la página seleccionada por la página que se desea cambiar
-            pageToReplaceOpt.setD_ADDR(getNextAvailableDADDR());
+            pageToReplaceOpt.setD_ADDR(getNextAvailableDADDROpt());
             pageToReplaceOpt.setLoaded(false);
             pageToReplaceOpt.setLoadedT(0);
             page.setM_ADDR(pageToReplaceOpt.getM_ADDR());
@@ -247,6 +247,27 @@ public class MemorySimulator {
         
         return nextAvailableDADDR;
     }
+    
+    public static int getNextAvailableDADDROpt(){
+        int nextAvailableDADDROpt = 1;
+        
+        List<Integer> allocatedAddresses = new LinkedList<>();       
+        
+        for (MMUPage mmuPageOpt: mmuOpt){
+            if (mmuPageOpt.getD_ADDR() != -1){
+                allocatedAddresses.add(mmuPageOpt.getD_ADDR());
+            }
+        }
+        
+        Collections.sort(allocatedAddresses);
+        
+        for (Integer D_ADDR : allocatedAddresses){
+            if (D_ADDR == nextAvailableDADDROpt) nextAvailableDADDROpt++;
+            else break;
+        }
+        
+        return nextAvailableDADDROpt;
+    }
 
     public static List<MMUPage> getMMU(){
         List<MMUPage> completePages = new LinkedList<>(mmuOpt);
@@ -325,7 +346,7 @@ public class MemorySimulator {
     }
     
     public static float ramPercentage(){
-        return (loadedPagesQuantity())*(100/5);
+        return (float)(loadedPagesQuantity())*(float)(100.0/5.0);
     }
     
     public static int vRamKB(){
@@ -345,15 +366,15 @@ public class MemorySimulator {
                 loadedPages.add(mmuPage);
             }
         }
-        return (loadedPages.size()*4)*(100/1000000);
+        return ((float)loadedPages.size()*4)*(float)(100.0/1000000.0);
     }
     
     public static int processesQuantity(){
         return processes.size();
     }
     
-    public static int getSimTime(){
-        return normalSimTime+thrashingSimTime;
+    public static float getSimTime(){
+        return (float)normalSimTime+(float)thrashingSimTime;
     }
     
     public static int getThrashingSimTime(){
@@ -361,7 +382,7 @@ public class MemorySimulator {
     }
     
     public static float getThrashingPercentage(){
-        return thrashingSimTime*(100/getSimTime());
+        return ((float)thrashingSimTime/getSimTime())*100;
     }
     
     // Opt datos
@@ -396,7 +417,7 @@ public class MemorySimulator {
     }
     
     public static float ramPercentageOpt(){
-        return (loadedPagesQuantityOpt())*(100/5);
+        return ((float)loadedPagesQuantityOpt())*(float)(100.0/5.0);
     }
     
     public static int vRamKBOpt(){
@@ -416,15 +437,15 @@ public class MemorySimulator {
                 loadedPagesOpt.add(mmuPageOpt);
             }
         }
-        return (loadedPagesOpt.size()*4)*(100/1000000);
+        return ((float)loadedPagesOpt.size()*4)*(float)(100.0/1000000.0);
     }
     
     public static int processesQuantityOpt(){
         return processesOpt.size();
     }
     
-    public static int getSimTimeOpt(){
-        return normalSimTimeOpt+thrashingSimTimeOpt;
+    public static float getSimTimeOpt(){
+        return (float)normalSimTimeOpt+(float)thrashingSimTimeOpt;
     }
     
     public static int getThrashingSimTimeOpt(){
@@ -432,7 +453,7 @@ public class MemorySimulator {
     }
     
     public static float getThrashingPercentageOpt(){
-        return thrashingSimTimeOpt*(100/getSimTimeOpt());
+        return ((float)thrashingSimTimeOpt/getSimTimeOpt())*100;
     }
     
     public static void loadPages(List<MMUPage> pages) throws InterruptedException{
@@ -629,7 +650,6 @@ public class MemorySimulator {
         // Alg Part
         Process process;
         Process processOpt;
-        
         
         int procPos = findProcess(row.getPID());
         

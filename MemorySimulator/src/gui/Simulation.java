@@ -56,6 +56,8 @@ public class Simulation extends javax.swing.JFrame {
                 List<FileRow> pointers = MemorySimulator.getPointers();
                 // Defining what thread will do here
                 for (FileRow row:pointers) {
+                    
+                    Thread.sleep(100);
                     try {
                         MemorySimulator.executeNextIteration(row);
                     } catch (InterruptedException ex) {
@@ -76,6 +78,7 @@ public class Simulation extends javax.swing.JFrame {
                 int counter = 0;
                 DefaultTableModel model = new DefaultTableModel();
                 LinkedList<MMUPage> pages = (LinkedList<MMUPage>)mmu.get(mmu.size()-1);
+                System.out.println(pages.toString());
                 model.addColumn("PAGE ID"); 
                 model.addColumn("PID");
                 model.addColumn("LOADED"); 
@@ -93,6 +96,8 @@ public class Simulation extends javax.swing.JFrame {
                     }
                 }
                 tblMmuOpt.setModel(model);
+                
+                counter = 0;
                 model = new DefaultTableModel();
                 model.addColumn("PAGE ID"); 
                 model.addColumn("PID");
@@ -107,8 +112,8 @@ public class Simulation extends javax.swing.JFrame {
                         model.addRow(new Object[]
                         {page.getPageID(), page.getPID(), page.isLoaded(), page.getL_ADDR(), 
                             page.getM_ADDR(), page.getD_ADDR(), page.getLoadedT(), page.getMark()});
-                        counter++;
                     }
+                    counter++;
                 }
                 tblMmuAlg.setModel(model);
                 
