@@ -204,18 +204,18 @@ public class MemorySimulator {
     public static void replacementRandom(MMUPage page){
         if (!page.isLoaded()){
             int ranNum = random.nextInt(5)+1;
-        List<MMUPage> pages = loadedPages();
-        
-        MMUPage pageToReplace = pages.get(ranNum);
-        
-        // Sustituir la página seleccionada por la página que se desea cambiar
-        pageToReplace.setD_ADDR(getNextAvailableDADDR());
-        pageToReplace.setLoaded(false);
-        page.setM_ADDR(pageToReplace.getM_ADDR());
-        page.setLoaded(true);
-        
-        pageToReplace.setM_ADDR(-1);
-        page.setD_ADDR(-1); 
+            List<MMUPage> pages = loadedPages();
+
+            MMUPage pageToReplace = pages.get(ranNum);
+
+            // Sustituir la página seleccionada por la página que se desea cambiar
+            pageToReplace.setD_ADDR(getNextAvailableDADDR());
+            pageToReplace.setLoaded(false);
+            page.setM_ADDR(pageToReplace.getM_ADDR());
+            page.setLoaded(true);
+
+            pageToReplace.setM_ADDR(-1);
+            page.setD_ADDR(-1); 
             thrashingSimTime+=5;
         }else{
             normalSimTime++;
@@ -378,7 +378,7 @@ public class MemorySimulator {
                     replacementAging(page);
                 }
                 case 4 -> {
-                    replacementOptimal(page);
+                    replacementRandom(page);
                 }
             }
         }
@@ -535,7 +535,7 @@ public class MemorySimulator {
 
         loadPages(pagesToLoad);
         iterationCounter++;
-        sleep(5000);
+        //sleep(5000);
         //System.out.println(mmu.toString());
     }
     
